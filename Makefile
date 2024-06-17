@@ -5,7 +5,8 @@ CXX = g++
 SRC = main.cpp \
       boids/boid_item.cpp \
       pVector/pVector.cpp \
-      screen/screen.cpp
+      screen/screen.cpp \
+      flocking/flocking.cpp
 
 # Include directories
 INC_DIR = -I src/include

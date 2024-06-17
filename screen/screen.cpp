@@ -53,10 +53,7 @@ void createSDLWindow()
     // Event handler
     SDL_Event e;
 
-    for (int i = 0; i < numBoids; ++i)
-    {
-        boids.emplace_back(getRandomNumber(0,1250),getRandomNumber(0,750),getRandomNumber(-5,5),getRandomNumber(-5,5),getRandomNumber(-0.1,0.1),getRandomNumber(-0.1,0.1));
-    }
+    flock flock(100);
 
     // While application is running
     while (!quit) 
@@ -75,24 +72,11 @@ void createSDLWindow()
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
         SDL_RenderClear(renderer);
 
-        SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
-
-        for (auto& boid : boids)
-        {
-            //boid.acceleration = pVector(0,0);
-            pVector alignment = boid.align(boids);
-            pVector cohesion = boid.cohesion(boids);
-            pVector seperation = boid.seperation(boids);
-            boid.acceleration = alignment + cohesion + seperation;
-
-            boid.update();
-            float angle = boid.CalculateVectorAngle();
-            boid.DrawRotatedTriangle(renderer, boid.position.x, boid.position.y, angle);
-        }
+        flock.update_flock(renderer);
 
         // Update screen
         SDL_RenderPresent(renderer);
-        SDL_Delay(10);
+        //SDL_Delay(10);
     }
 
     // Destroy renderer

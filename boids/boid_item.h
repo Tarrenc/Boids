@@ -19,8 +19,10 @@ class boid
         pVector position;
         pVector velocity;
         pVector acceleration;
-        float maxForce = 0.35;
-        float maxSpeed = 5;
+        float maxForce = 0.04;
+        float maxSpeed = 0.35;
+        bool subject = false;
+
         boid(float p_x, float p_y, float v_x, float v_y, float a_x, float a_y): position(p_x, p_y), velocity(v_x, v_y), acceleration(a_x, a_y) {};
         void drawCircle(SDL_Renderer* renderer, float centerX, float centerY, float radius);
         void DrawRotatedTriangle(SDL_Renderer* renderer, float x, float y, float rotation);
@@ -32,9 +34,6 @@ class boid
         float CalculateVectorAngle();
 
     private:
-
-        
-
 };
 
 

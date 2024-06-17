@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 #include "../boids/boid_item.h"
+#include "../flocking/flocking.h"
+
 // Function to initialize SDL and create a window
 void createSDLWindow();
 

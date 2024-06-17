@@ -1,46 +1,5 @@
 #include "boid_item.h"
 
-
-void boid::drawCircle(SDL_Renderer* renderer, float centerX, float centerY, float radius)
-{
-    // Convert floating-point positions to integers
-    int x0 = static_cast<int>(centerX);
-    int y0 = static_cast<int>(centerY);
-    int r = static_cast<int>(radius);
-
-    int x = r - 1;
-    int y = 0;
-    int dx = 1;
-    int dy = 1;
-    int err = dx - (r << 1);
-
-    while (x >= y) 
-    {
-        // Draw the circle's points in each octant
-        SDL_RenderDrawPoint(renderer, x0 + x, y0 + y);
-        SDL_RenderDrawPoint(renderer, x0 + y, y0 + x);
-        SDL_RenderDrawPoint(renderer, x0 - y, y0 + x);
-        SDL_RenderDrawPoint(renderer, x0 - x, y0 + y);
-        SDL_RenderDrawPoint(renderer, x0 - x, y0 - y);
-        SDL_RenderDrawPoint(renderer, x0 - y, y0 - x);
-        SDL_RenderDrawPoint(renderer, x0 + y, y0 - x);
-        SDL_RenderDrawPoint(renderer, x0 + x, y0 - y);
-
-        if (err <= 0) 
-        {
-            y++;
-            err += dy;
-            dy += 2;
-        }
-        if (err > 0) 
-        {
-            x--;
-            dx += 2;
-            err += dx - (r << 1);
-        }
-    }
-}
-
 void boid::update()
 {
     this->position = this->velocity + this->position;
@@ -200,9 +159,15 @@ void boid::DrawRotatedTriangle(SDL_Renderer* renderer, float x, float y, float r
     vertices[2].y = y + halfBase * sinf(rightAngle);
 
     // Draw the triangle
+    if (this->subject)
+    {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        this->drawCircle(renderer, this->position.x, this->position.y, 50);
+    }
     SDL_RenderDrawLineF(renderer, vertices[0].x, vertices[0].y, vertices[1].x, vertices[1].y);
     SDL_RenderDrawLineF(renderer, vertices[1].x, vertices[1].y, vertices[2].x, vertices[2].y);
     SDL_RenderDrawLineF(renderer, vertices[2].x, vertices[2].y, vertices[0].x, vertices[0].y);
+    SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
 }
 
 float boid::CalculateVectorAngle() {
@@ -212,3 +177,44 @@ float boid::CalculateVectorAngle() {
     float angleDegrees = angleRadians * 180.0f / PI;
     return angleDegrees;
 }
+
+void boid::drawCircle(SDL_Renderer* renderer, float centerX, float centerY, float radius)
+{
+    // Convert floating-point positions to integers
+    int x0 = static_cast<int>(centerX);
+    int y0 = static_cast<int>(centerY);
+    int r = static_cast<int>(radius);
+
+    int x = r - 1;
+    int y = 0;
+    int dx = 1;
+    int dy = 1;
+    int err = dx - (r << 1);
+
+    while (x >= y) 
+    {
+        // Draw the circle's points in each octant
+        SDL_RenderDrawPoint(renderer, x0 + x, y0 + y);
+        SDL_RenderDrawPoint(renderer, x0 + y, y0 + x);
+        SDL_RenderDrawPoint(renderer, x0 - y, y0 + x);
+        SDL_RenderDrawPoint(renderer, x0 - x, y0 + y);
+        SDL_RenderDrawPoint(renderer, x0 - x, y0 - y);
+        SDL_RenderDrawPoint(renderer, x0 - y, y0 - x);
+        SDL_RenderDrawPoint(renderer, x0 + y, y0 - x);
+        SDL_RenderDrawPoint(renderer, x0 + x, y0 - y);
+
+        if (err <= 0) 
+        {
+            y++;
+            err += dy;
+            dy += 2;
+        }
+        if (err > 0) 
+        {
+            x--;
+            dx += 2;
+            err += dx - (r << 1);
+        }
+    }
+}
+
