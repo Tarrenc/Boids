@@ -1,5 +1,8 @@
 #include "pVector.h"
 
+
+pVector::pVector() {}
+
 pVector::pVector(float x_, float y_)
 {
     this->x = x_;
@@ -16,9 +19,9 @@ pVector pVector::operator-(const pVector first)
     return pVector(this->x - first.x, this->y - first.y);
 }
 
-float pVector::operator*(const pVector first)
+pVector pVector::operator*(const pVector first)
 {
-    return (this->x * first.x + this->y * first.y);
+    return pVector(this->x * first.x, this->y * first.y);
 }
 
 bool pVector::operator!=(const pVector& other)
@@ -59,4 +62,9 @@ void pVector::limit(float max)
     {
         this->setMagnitude(max);
     }
+}
+
+float pVector::dot(const pVector first)
+{
+    return (this->x * first.x + this->y * first.y);
 }

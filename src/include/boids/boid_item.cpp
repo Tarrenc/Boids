@@ -28,8 +28,6 @@ void boid::update()
         this->position.y = 750;
         //this->position.x = 750 - this->position.x;
     }
-
-
 }
 
 float boid::distance(boid other)
@@ -40,27 +38,41 @@ float boid::distance(boid other)
     return std::sqrt((dx * dx) + (dy * dy));
 }
 
-pVector boid::align(std::vector<boid> flock)
+
+std::vector<boid> boid::get_nearby_boids(SDL_Renderer* renderer, std::vector<boid> *flock, float radius)
 {
-    pVector average = pVector(0,0);
-    float radius = 50;
-    int total = 0;
-    float distance = 0;
-    for (auto& boid : flock)
+    std::vector<boid> nearby_boids;
+
+    for (auto& boid : *flock)
     {
-        distance = this->distance(boid);
-        //std::cout << distance << std::endl;
+        
+        float distance = this->distance(boid);
         if (&boid != this && distance < radius)
         {
-            average = average + boid.velocity;
-            total++;
+            nearby_boids.push_back(boid);
+            if (this->subject)
+            {
+                this->draw_line(renderer, boid);
+            }
         }
     }
 
-    //std::cout << total << std::endl;
-    if (total > 0)
+    return nearby_boids;
+}
+
+pVector boid::align(std::vector<boid> *flock)
+{
+    pVector average = pVector(0,0);
+
+    for (auto& boid : *flock)
     {
-        average = average / total;
+       average = average + boid.velocity;
+    }
+
+    //std::cout << total << std::endl;
+    if (flock->size() > 0)
+    {
+        average = average / (flock->size());
         average.setMagnitude(this->maxSpeed);
         average = average - this->velocity;
         average.limit(this->maxForce);
@@ -68,62 +80,47 @@ pVector boid::align(std::vector<boid> flock)
     return average;
 }
 
-pVector boid::cohesion(std::vector<boid> flock)
+pVector boid::cohesion(std::vector<boid> *flock)
 {
     pVector average = pVector(0,0);
-    float radius = 50;
-    int total = 0;
-    float distance = 0;
-    for (auto& boid : flock)
+
+    for (auto& boid : *flock)
     {
-        distance = this->distance(boid);
-        //std::cout << distance << std::endl;
-        if (&boid != this && distance < radius)
-        {
-            average = average + boid.position;
-            total++;
-        }
+        average = average + boid.position;
     }
 
-    //std::cout << total << std::endl;
-    if (total > 0)
+    if (flock->size() > 0)
     {
-        average = average / total;
+        average = average /  (flock->size());
         average = average - this->position;
         average.setMagnitude(this->maxSpeed);
-        //std::cout << average.x << std::endl;
         average = average - this->velocity;
         average.limit(this->maxForce);
     }
-   return average;
+
+    return average;
 }
 
-pVector boid::seperation(std::vector<boid> flock)
+pVector boid::seperation(std::vector<boid> *flock)
 {
     pVector average = pVector(0,0);
     pVector diff = pVector(0,0);
-    float radius = 50;
-    int total = 0;
+
     float distance = 0;
-    for (auto& boid : flock)
+    for (auto& boid : *flock)
     {
         distance = this->distance(boid);
-        if (&boid != this && distance < radius)
+        diff = this->position - boid.position;
+        if (distance != 0)
         {
-            diff = this->position - boid.position;
-            if (distance != 0)
-            {
-                diff = diff / (distance * distance);
-                average = average + diff;
-                total++;    
-            }
-
+            diff = diff / (distance * distance);
+            average = average + diff;  
         }
     }
 
-    if (total > 0)
+    if (flock->size() > 0)
     {
-        average = average / total;
+        average = average / (flock->size());
         average.setMagnitude(this->maxSpeed);
         average = average - this->velocity;
         average.limit(this->maxForce);
@@ -142,27 +139,27 @@ void boid::DrawRotatedTriangle(SDL_Renderer* renderer, float x, float y, float r
     float angle = rotation * PI / 180.0f;
 
     // Calculate the vertices of the triangle
-    SDL_FPoint vertices[3];
+    std::vector<pVector> vertices(3);
 
-    // Top vertex (rotated upwards along the y-axis)
-    vertices[0].x = x + height * cosf(angle);
-    vertices[0].y = y + height * sinf(angle);
+    // Top vertex
+    vertices[0].x = x; 
+    vertices[0].y = y;
 
     // Bottom left vertex (rotated to the left)
     float leftAngle = angle + 3.0f * PI / 2.0f; // 270 degrees
-    vertices[1].x = x + halfBase * cosf(leftAngle);
-    vertices[1].y = y + halfBase * sinf(leftAngle);
+    vertices[1].x = x + halfBase * cosf(leftAngle) - height * cosf(angle);
+    vertices[1].y = y + halfBase * sinf(leftAngle) - height * sinf(angle);
 
     // Bottom right vertex (rotated to the right)
     float rightAngle = angle + PI / 2.0f; // 90 degrees
-    vertices[2].x = x + halfBase * cosf(rightAngle);
-    vertices[2].y = y + halfBase * sinf(rightAngle);
+    vertices[2].x = x + halfBase * cosf(rightAngle) - height * cosf(angle);
+    vertices[2].y = y + halfBase * sinf(rightAngle) - height * sinf(angle);
 
     // Draw the triangle
     if (this->subject)
     {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-        this->drawCircle(renderer, this->position.x, this->position.y, 50);
+        this->drawCircle(renderer, this->position.x, this->position.y, 150);
     }
     SDL_RenderDrawLineF(renderer, vertices[0].x, vertices[0].y, vertices[1].x, vertices[1].y);
     SDL_RenderDrawLineF(renderer, vertices[1].x, vertices[1].y, vertices[2].x, vertices[2].y);
@@ -217,4 +214,17 @@ void boid::drawCircle(SDL_Renderer* renderer, float centerX, float centerY, floa
         }
     }
 }
+
+void boid::draw_line(SDL_Renderer* renderer, boid other) 
+{
+    // Set the drawing color (e.g., white)
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+
+    // Draw the line
+    SDL_RenderDrawLine(renderer, this->position.x, this->position.y, other.position.x, other.position.y);
+
+    // Present the renderer (update the screen)
+    //SDL_RenderPresent(renderer);
+}
+
 

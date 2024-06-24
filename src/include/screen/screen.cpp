@@ -76,7 +76,7 @@ void createSDLWindow()
 
         // Update screen
         SDL_RenderPresent(renderer);
-        //SDL_Delay(10);
+        SDL_Delay(1);
     }
 
     // Destroy renderer

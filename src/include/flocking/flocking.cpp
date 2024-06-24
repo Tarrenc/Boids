@@ -2,11 +2,10 @@
 
 flock::flock(int n_boids)
 {
-
    for (int i = 0; i < n_boids; ++i)
     {
         this->birds.push_back(boid(generate_random_number(0,1250),generate_random_number(0,750),
-                           generate_random_number(-5,5),generate_random_number(-5,5),
+                           generate_random_number(-1,1),generate_random_number(-1,1),
                            generate_random_number(-0.1,0.1),generate_random_number(-0.1,0.1)));
     }
 }
@@ -32,15 +31,16 @@ void flock::update_flock(SDL_Renderer* renderer)
 {
     SDL_SetRenderDrawColor(renderer, 0, 255, 255, 255);
     this->birds[0].subject = true;
-    for (auto& boid : this->birds)
-    {
-        pVector alignment = boid.align(this->birds);
-        pVector cohesion = boid.cohesion(this->birds);
-        pVector seperation = boid.seperation(this->birds);
-        boid.acceleration = alignment + cohesion + seperation;
+    for (auto& current_boid : this->birds)
+    { 
+        std::vector<boid> local_flockmates = current_boid.get_nearby_boids(renderer, &(this->birds), 100);
+        pVector alignment = current_boid.align(&local_flockmates);
+        pVector cohesion = current_boid.cohesion(&local_flockmates);
+        pVector seperation = current_boid.seperation(&local_flockmates);
+        current_boid.acceleration = seperation + alignment + cohesion;
         
-        boid.update();
-        float angle = boid.CalculateVectorAngle();
-        boid.DrawRotatedTriangle(renderer, boid.position.x, boid.position.y, angle);
+        current_boid.update();
+        float angle = current_boid.CalculateVectorAngle();
+        current_boid.DrawRotatedTriangle(renderer, current_boid.position.x, current_boid.position.y, angle);
     }
 }
